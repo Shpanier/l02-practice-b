@@ -1,0 +1,24 @@
+name: 02 Steps and jobs
+
+on:
+  workflow_dispatch:
+
+jobs:
+  bash-step:
+    runs-on: ubuntu-24.04
+    steps:
+      - run: echo "bash step on $(hostname)"
+      - run: echo "made by bash-step" > note.txt
+      - run: cat note.txt
+
+  python-step:
+    runs-on: ubuntu-24.04
+    steps:
+      - run: print("python step:", 6 * 7)
+        shell: python
+
+  after-both:
+    runs-on: ubuntu-24.04
+    needs: [bash-step, python-step]
+    steps:
+      - run: cat note.txt || echo "note.txt is not on this machine"
