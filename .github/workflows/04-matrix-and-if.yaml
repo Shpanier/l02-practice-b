@@ -1,0 +1,39 @@
+name: 04 Matrix and if
+
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  combos:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    strategy:
+      fail-fast: false
+      matrix:
+        python: ["3.12", "3.13"]
+        suite: [unit, api, lint]
+        exclude:
+          - python: "3.13"
+            suite: lint
+    steps:
+      - run: echo "python ${{ matrix.python }}, suite ${{ matrix.suite }}"
+      - name: Only for the api suite
+        if: matrix.suite == 'api'
+        run: echo "starting the API first"
+      - name: Fail one combination on purpose
+        if: matrix.python == '3.13' && matrix.suite == 'unit'
+        run: exit 1
+      - name: Runs only after a failure
+        if: failure()
+        run: echo "a step before me failed"
+
+  summary:
+    runs-on: ubuntu-24.04
+    needs: combos
+    if: always()
+    steps:
+      - run: echo "combos finished with result ${{ needs.combos.result }}"
