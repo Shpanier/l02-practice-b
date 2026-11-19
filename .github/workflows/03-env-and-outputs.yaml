@@ -1,0 +1,37 @@
+name: 03 Env and outputs
+
+on:
+  workflow_dispatch:
+
+env:
+  COURSE: devops
+
+jobs:
+  producer:
+    runs-on: ubuntu-24.04
+    env:
+      TEAM: grades
+    outputs:
+      version: ${{ steps.pick.outputs.version }}
+    steps:
+      - name: Pick a version
+        id: pick
+        env:
+          STEP_ONLY: here
+        run: |
+          echo "COURSE=$COURSE TEAM=$TEAM STEP_ONLY=$STEP_ONLY"
+          echo "version=1.4.2" >> "$GITHUB_OUTPUT"
+          echo "BUILD=42" >> "$GITHUB_ENV"
+      - name: Next step, same job
+        run: |
+          echo "STEP_ONLY=${STEP_ONLY:-unset} BUILD=${BUILD:-unset}"
+          echo "version=${{ steps.pick.outputs.version }}"
+
+  consumer:
+    runs-on: ubuntu-24.04
+    needs: producer
+    steps:
+      - name: Another job, another machine
+        run: |
+          echo "COURSE=$COURSE TEAM=${TEAM:-unset} BUILD=${BUILD:-unset}"
+          echo "version=${{ needs.producer.outputs.version }}"
