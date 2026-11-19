@@ -1,0 +1,10 @@
+name: 01 Hello
+
+on:
+  workflow_dispatch:
+
+jobs:
+  say-hello:
+    runs-on: ubuntu-24.04
+    steps:
+      - run: echo "Hello from GitHub Actions"
